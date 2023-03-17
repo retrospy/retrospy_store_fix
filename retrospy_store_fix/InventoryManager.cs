@@ -49,6 +49,7 @@ namespace StoreFix
                 if (stock != -1)
                 {
                     UpdateStock(product.id.ToString(), stock);
+                    Thread.Sleep(1000);
                 }
             }
         }
