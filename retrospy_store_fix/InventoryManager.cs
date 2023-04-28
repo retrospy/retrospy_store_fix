@@ -92,7 +92,7 @@ namespace StoreFix
 
         private void GetAttributeStockItems()
         {
-            HttpResponseMessage response = wcHttpClient.GetAsync("/wp-json/wc/v3/attribute-stock").Result;
+            HttpResponseMessage response = wcHttpClient.GetAsync("/wp-json/wc/v3/attribute-stock?per_page=100").Result;
             string responseStr = string.Empty;
 
             using (StreamReader stream = new StreamReader(response.Content.ReadAsStreamAsync().Result))
