@@ -42,6 +42,8 @@ namespace StoreFix
                 foreach (var attr in product.attributes)
                 {
                     int tempStock = GetStock(attr.name.ToString());
+                    if (attr.options is not null && attr.options.Count > 0)
+                        tempStock /= GetQuantityUsed(attr.options[0].ToString());
                     if (tempStock < stock || stock == -1)
                         stock = tempStock;
                 }
@@ -52,6 +54,33 @@ namespace StoreFix
                     Thread.Sleep(1000);
                 }
             }
+        }
+
+        private int GetQuantityUsed(string quantityStr)
+        {
+            switch(quantityStr)
+            {
+                case "1x":
+                    return 1;
+                case "2x":
+                    return 2;
+                case "3x":
+                    return 3;
+                case "4x":
+                    return 4;
+                case "5x":
+                    return 5;
+                case "6x":
+                    return 6;
+                case "7x":
+                    return 7;
+                case "8x":
+                    return 8;
+                case "9x":
+                    return 9;
+            }
+
+            return 1;
         }
 
         private void UpdateStock(string productId, int stock)
