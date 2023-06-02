@@ -23,6 +23,7 @@ namespace StoreFix
                 BaseAddress = new Uri("https://retro-spy.com"),
             };
             wcHttpClient.DefaultRequestHeaders.Add("ContentType", "application/json");
+            wcHttpClient.DefaultRequestHeaders.Add("User-Agent", "RetroSpy-Store-Fix-Service");
             var authBytes = System.Text.Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("WCKey") + ":" + Environment.GetEnvironmentVariable("WCSecret"));
             string authHeaderString = System.Convert.ToBase64String(authBytes);
             wcHttpClient.DefaultRequestHeaders.Add("Authorization", "Basic " + authHeaderString);
