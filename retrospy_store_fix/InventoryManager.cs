@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,6 +14,8 @@ namespace StoreFix
     {
         private dynamic? attributeStockItems;
         private dynamic? products;
+        private dynamic? variations;
+        private dynamic? productVariationsItems;
         private HttpClient wcHttpClient;
 
         public InventoryManager() 
@@ -39,17 +42,53 @@ namespace StoreFix
 
             foreach (var product in products)
             {
+                bool hasVariations = false;
                 int stock = -1;
+                int tempStock = -1;
                 foreach (var attr in product.attributes)
                 {
-                    int tempStock = GetStock(attr.name.ToString());
+                    if (attr.variation == true && product.type == "variable")
+                    {
+                        GetProductVariations(int.Parse((string)product.id));
+                        foreach (var variation in productVariationsItems)
+                        {
+                            if (variation.manage_stock == true)
+                            {
+                                hasVariations = true;
+                            }
+                        }
+                        
+                        if (hasVariations)
+                            continue;
+                    }
+                    tempStock = GetStock(attr.name.ToString());
                     if (attr.options is not null && attr.options.Count > 0)
                         tempStock /= GetQuantityUsed(attr.options[0].ToString());
                     if (tempStock < stock || stock == -1)
                         stock = tempStock;
                 }
 
-                if (stock != -1)
+                if (hasVariations)
+                {
+                    foreach (var variation in productVariationsItems)
+                    {
+                        if (variation.manage_stock == true)
+                        {
+                            if (variation.attributes[0].option == "No" && stock != -1)
+                            {
+                                UpdateVariationStock(product.id.ToString(), variation.id.ToString(), stock);
+                                Thread.Sleep(1000); 
+                            }
+                            else
+                            {
+                                int variationStock = GetStock(variation.attributes[0].name.ToString()) / GetQuantityUsed(variation.attributes[0].option.ToString());
+                                UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
+                                Thread.Sleep(1000);
+                            }
+                        }
+                    }
+                }
+                else if (stock != -1)
                 {
                     UpdateStock(product.id.ToString(), stock);
                     Thread.Sleep(1000);
@@ -61,7 +100,6 @@ namespace StoreFix
         {
             switch(quantityStr)
             {
-                case "Yes":
                 case "1x":
                     return 1;
                 case "2x":
@@ -80,7 +118,7 @@ namespace StoreFix
                     return 8;
                 case "9x":
                     return 9;
-            }
+            }   
 
             return 1;
         }
@@ -90,6 +128,13 @@ namespace StoreFix
             var s = new StringContent("{\n \"stock_quantity\": " + stock.ToString() + "\n}");
             s.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
             wcHttpClient.PutAsync("/wp-json/wc/v3/products/" + productId, s);
+        }
+
+        private void UpdateVariationStock(string productId, string variationId, int stock)
+        {
+            var s = new StringContent("{\n \"stock_quantity\": " + stock.ToString() + "\n}");
+            s.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+            wcHttpClient.PutAsync("/wp-json/wc/v3/products/" + productId + "/variations/" + variationId, s);
         }
 
         private int GetStock(string name)
@@ -133,5 +178,19 @@ namespace StoreFix
 
             attributeStockItems = JsonConvert.DeserializeObject(responseStr);
         }
+
+        private void GetProductVariations(int productId)
+        {
+            HttpResponseMessage response = wcHttpClient.GetAsync(" /wp-json/wc/v3/products/" + productId + "/variations?per_page=100").Result;
+            string responseStr = string.Empty;
+
+            using (StreamReader stream = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+            {
+                responseStr = stream.ReadToEnd();
+            }
+
+           productVariationsItems = JsonConvert.DeserializeObject(responseStr);
+        }
+
     }
 }
