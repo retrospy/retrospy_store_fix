@@ -14,7 +14,6 @@ namespace StoreFix
     {
         private dynamic? attributeStockItems;
         private dynamic? products;
-        private dynamic? variations;
         private dynamic? productVariationsItems;
         private HttpClient wcHttpClient;
 
@@ -50,16 +49,19 @@ namespace StoreFix
                     if (attr.variation == true && product.type == "variable")
                     {
                         GetProductVariations(int.Parse((string)product.id));
-                        foreach (var variation in productVariationsItems)
+                        if (productVariationsItems != null)
                         {
-                            if (variation.manage_stock == true)
+                            foreach (var variation in productVariationsItems)
                             {
-                                hasVariations = true;
+                                if (variation.manage_stock == true)
+                                {
+                                    hasVariations = true;
+                                }
                             }
+
+                            if (hasVariations)
+                                continue;
                         }
-                        
-                        if (hasVariations)
-                            continue;
                     }
                     tempStock = GetStock(attr.name.ToString());
                     if (attr.options is not null && attr.options.Count > 0)
@@ -68,7 +70,7 @@ namespace StoreFix
                         stock = tempStock;
                 }
 
-                if (hasVariations)
+                if (hasVariations && productVariationsItems != null)
                 {
                     foreach (var variation in productVariationsItems)
                     {
