@@ -61,6 +61,7 @@ namespace StoreFix
         {
             switch(quantityStr)
             {
+                case "Yes":
                 case "1x":
                     return 1;
                 case "2x":
