@@ -84,7 +84,8 @@ namespace StoreFix
                             else
                             {
                                 int variationStock = GetStock(variation.attributes[0].name.ToString()) / GetQuantityUsed(variation.attributes[0].option.ToString());
-                                UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
+                                if (variationStock != -1)
+                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
                                 Thread.Sleep(1000);
                             }
                         }
