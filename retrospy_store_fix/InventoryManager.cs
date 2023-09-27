@@ -42,8 +42,8 @@ namespace StoreFix
             foreach (var product in products)
             {
                 bool hasVariations = false;
-                int stock = -1;
-                int tempStock = -1;
+                int stock = -100;
+                int tempStock = -100;
                 foreach (var attr in product.attributes)
                 {
                     if (attr.variation == true && product.type == "variable")
@@ -66,7 +66,7 @@ namespace StoreFix
                     tempStock = GetStock(attr.name.ToString());
                     if (attr.options is not null && attr.options.Count > 0)
                         tempStock /= GetQuantityUsed(attr.options[0].ToString());
-                    if (tempStock < stock || stock == -1)
+                    if (tempStock < stock || stock == -100)
                         stock = tempStock;
                 }
 
@@ -76,7 +76,7 @@ namespace StoreFix
                     {
                         if (variation.manage_stock == true)
                         {
-                            if (variation.attributes[0].option == "No" && stock != -1)
+                            if (variation.attributes[0].option == "No" && stock != -100)
                             {
                                 UpdateVariationStock(product.id.ToString(), variation.id.ToString(), stock);
                                 Thread.Sleep(1000); 
@@ -84,14 +84,14 @@ namespace StoreFix
                             else
                             {
                                 int variationStock = GetStock(variation.attributes[0].name.ToString()) / GetQuantityUsed(variation.attributes[0].option.ToString());
-                                if (variationStock != -1)
+                                if (variationStock != -100)
                                     UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
                                 Thread.Sleep(1000);
                             }
                         }
                     }
                 }
-                else if (stock != -1)
+                else if (stock != -100)
                 {
                     UpdateStock(product.id.ToString(), stock);
                     Thread.Sleep(1000);
@@ -143,7 +143,7 @@ namespace StoreFix
         private int GetStock(string name)
         {
             if (attributeStockItems == null)
-                return -1;
+                return -100;
 
             foreach (var obj in attributeStockItems)
             {
@@ -153,7 +153,7 @@ namespace StoreFix
                 }
             }
 
-            return -1;
+            return -100;
         }
 
         private void GetProducts()
