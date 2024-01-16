@@ -14,6 +14,9 @@ namespace StoreFix
         {
             var inventoryManager = new InventoryManager();
             inventoryManager.SyncInventory();
+
+            var tindieSync = new TindieSync();
+            tindieSync.CreateOrders().GetAwaiter().GetResult(); ;
         }
     }
 }
