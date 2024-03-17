@@ -371,7 +371,7 @@ namespace StoreFix
                 lastOrder = int.Parse(line ?? "0");
                 sr.Close();
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 lastOrder = 0;
             }
@@ -408,7 +408,7 @@ namespace StoreFix
                                                                          order.shipping_country_code,
                                                                          GenerateItemJson(productsBought),
                                                                          order.total_shipping
-                    ).Replace("\r\n", "");
+                    ).Replace("\n", "").Replace("\r", "");
 
                     var s = new StringContent(createJson);
                     s.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
