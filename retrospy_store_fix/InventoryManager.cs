@@ -33,69 +33,75 @@ namespace StoreFix
 
         public void SyncInventory()
         {
-            GetProducts();
-            GetAttributeStockItems();
-
-            if (products == null)
-                return;
-
-            foreach (var product in products)
+            int productPage = 1;
+            while (productPage < 3)
             {
-                bool hasVariations = false;
-                int stock = -100;
-                int tempStock = -100;
-                foreach (var attr in product.attributes)
+                GetProducts(productPage);
+                GetAttributeStockItems();
+
+                if (products == null)
+                    return;
+
+                foreach (var product in products)
                 {
-                    if (attr.variation == true && product.type == "variable")
+                    bool hasVariations = false;
+                    int id = product.id;
+                    int stock = -100;
+                    int tempStock = -100;
+                    foreach (var attr in product.attributes)
                     {
-                        GetProductVariations(int.Parse((string)product.id));
-                        if (productVariationsItems != null)
+                        if (attr.variation == true && product.type == "variable")
                         {
-                            foreach (var variation in productVariationsItems)
+                            GetProductVariations(int.Parse((string)product.id));
+                            if (productVariationsItems != null)
                             {
-                                if (variation.manage_stock == true)
+                                foreach (var variation in productVariationsItems)
                                 {
-                                    hasVariations = true;
+                                    if (variation.manage_stock == true)
+                                    {
+                                        hasVariations = true;
+                                    }
+                                }
+
+                                if (hasVariations)
+                                    continue;
+                            }
+                        }
+                        tempStock = GetStock(attr.name.ToString());
+                        if (attr.options is not null && attr.options.Count > 0)
+                            tempStock /= GetQuantityUsed(attr.options[0].ToString());
+                        if (tempStock < stock || stock == -100)
+                            stock = tempStock;
+                    }
+
+                    if (hasVariations && productVariationsItems != null)
+                    {
+                        foreach (var variation in productVariationsItems)
+                        {
+                            if (variation.manage_stock == true)
+                            {
+                                if (variation.attributes[0].option == "No" && stock != -100)
+                                {
+                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), stock);
+                                    Thread.Sleep(1000);
+                                }
+                                else
+                                {
+                                    int variationStock = GetStock(variation.attributes[0].name.ToString()) / GetQuantityUsed(variation.attributes[0].option.ToString());
+                                    if (variationStock != -100)
+                                        UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
+                                    Thread.Sleep(1000);
                                 }
                             }
-
-                            if (hasVariations)
-                                continue;
                         }
                     }
-                    tempStock = GetStock(attr.name.ToString());
-                    if (attr.options is not null && attr.options.Count > 0)
-                        tempStock /= GetQuantityUsed(attr.options[0].ToString());
-                    if (tempStock < stock || stock == -100)
-                        stock = tempStock;
-                }
-
-                if (hasVariations && productVariationsItems != null)
-                {
-                    foreach (var variation in productVariationsItems)
+                    else if (stock != -100)
                     {
-                        if (variation.manage_stock == true)
-                        {
-                            if (variation.attributes[0].option == "No" && stock != -100)
-                            {
-                                UpdateVariationStock(product.id.ToString(), variation.id.ToString(), stock);
-                                Thread.Sleep(1000); 
-                            }
-                            else
-                            {
-                                int variationStock = GetStock(variation.attributes[0].name.ToString()) / GetQuantityUsed(variation.attributes[0].option.ToString());
-                                if (variationStock != -100)
-                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(stock, variationStock));
-                                Thread.Sleep(1000);
-                            }
-                        }
+                        UpdateStock(product.id.ToString(), stock);
+                        Thread.Sleep(1000);
                     }
                 }
-                else if (stock != -100)
-                {
-                    UpdateStock(product.id.ToString(), stock);
-                    Thread.Sleep(1000);
-                }
+                productPage++;
             }
         }
 
@@ -156,9 +162,9 @@ namespace StoreFix
             return -100;
         }
 
-        private void GetProducts()
+        private void GetProducts(int page)
         {
-            HttpResponseMessage response = wcHttpClient.GetAsync("/wp-json/wc/v3/products?per_page=100").Result;
+            HttpResponseMessage response = wcHttpClient.GetAsync(string.Format("/wp-json/wc/v3/products?per_page=100&page={0}", page)).Result;
             string responseStr = string.Empty;
 
             using (StreamReader stream = new StreamReader(response.Content.ReadAsStreamAsync().Result))
