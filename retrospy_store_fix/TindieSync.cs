@@ -71,8 +71,8 @@ namespace StoreFix
                                 var wooItem1 = new WooProduct();
                                 wooItem1.ProductId = 1148;
                                 wooItem1.Quantity = item.quantity;
-                                wooItem.Price = 5.50f;
-                                wooItem.VariationId = 0;
+                                wooItem1.Price = 5.50f;
+                                wooItem1.VariationId = 0;
                                 items.Add(wooItem1);
                             }
                             if (item.options.ToString().Contains("Add TS78L05CT?: Yes"))
@@ -80,8 +80,8 @@ namespace StoreFix
                                 var wooItem1 = new WooProduct();
                                 wooItem1.ProductId = 1146;
                                 wooItem1.Quantity = item.quantity;
-                                wooItem.Price = 0.55f;
-                                wooItem.VariationId = 0;
+                                wooItem1.Price = 0.55f;
+                                wooItem1.VariationId = 0;
                                 items.Add(wooItem1);
                             }
                             break;
@@ -98,7 +98,7 @@ namespace StoreFix
                             if (addCable)
                             {
                                 var wooItemAdd = new WooProduct();
-                                wooItem.ProductId = 971;
+                                wooItemAdd.ProductId = 971;
                                 wooItemAdd.Quantity = item.quantity;
                                 wooItemAdd.Price = 5.50f;
                                 wooItemAdd.VariationId = 0;
@@ -118,7 +118,7 @@ namespace StoreFix
                             if (addPartsKit)
                             {
                                 var wooItemAdd = new WooProduct();
-                                wooItem.ProductId = 997;
+                                wooItemAdd.ProductId = 997;
                                 wooItemAdd.Quantity = item.quantity;
                                 wooItemAdd.Price = item.options == " (Bare PCB or Fully Assembled: Fully Assembled)" ? 22.00f : 15.40f;
                                 wooItemAdd.VariationId = 0;
@@ -148,7 +148,7 @@ namespace StoreFix
                             if (addROM)
                             {
                                 var wooItemAdd = new WooProduct();
-                                wooItem.ProductId = 1006;
+                                wooItemAdd.ProductId = 1006;
                                 wooItemAdd.Quantity = item.quantity;
                                 wooItemAdd.Price = 5.50f;
                                 wooItemAdd.VariationId = 0;
@@ -228,7 +228,7 @@ namespace StoreFix
                             if (addPartsKit)
                             {
                                 var wooItemAdd = new WooProduct();
-                                wooItem.ProductId = 984;
+                                wooItemAdd.ProductId = 984;
                                 wooItemAdd.Quantity = item.quantity;
                                 wooItemAdd.Price = 13.20f;
                                 wooItemAdd.VariationId = 0;
@@ -273,8 +273,8 @@ namespace StoreFix
                                 var wooItem1 = new WooProduct();
                                 wooItem1.ProductId = 1149;
                                 wooItem1.Quantity = item.quantity;
-                                wooItem.Price = 5.50f;
-                                wooItem.VariationId = 0;
+                                wooItem1.Price = 5.50f;
+                                wooItem1.VariationId = 0;
                                 items.Add(wooItem1);
                             }
                             break;
@@ -306,8 +306,8 @@ namespace StoreFix
                                 var wooItem1 = new WooProduct();
                                 wooItem1.ProductId = 982;
                                 wooItem1.Quantity = item.quantity;
-                                wooItem.Price = 13.20f;
-                                wooItem.VariationId = 0;
+                                wooItem1.Price = 13.20f;
+                                wooItem1.VariationId = 0;
                                 items.Add(wooItem1);
                             }
                             else if (item.options.ToString().Contains("Parts Kit?: v3 Parts Kit"))
@@ -315,8 +315,8 @@ namespace StoreFix
                                 var wooItem1 = new WooProduct();
                                 wooItem1.ProductId = 983;
                                 wooItem1.Quantity = item.quantity;
-                                wooItem.Price = 13.20f;
-                                wooItem.VariationId = 0;
+                                wooItem1.Price = 13.20f;
+                                wooItem1.VariationId = 0;
                                 items.Add(wooItem1);
                             }
                             break;
@@ -423,7 +423,9 @@ namespace StoreFix
 
                     if (response.IsSuccessStatusCode)
                     {
-                        StreamWriter sw = new StreamWriter("lastorder.txt");
+                        var location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                        var lastorder_path = Path.Combine(Path.GetDirectoryName(location)!, "lastorder.txt");
+                        StreamWriter sw = new StreamWriter(lastorder_path);
                         sw.WriteLine(order.number);
                         sw.Close();
                     }
