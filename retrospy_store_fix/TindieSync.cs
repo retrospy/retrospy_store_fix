@@ -366,7 +366,9 @@ namespace StoreFix
             int lastOrder;
             try
             {
-                StreamReader sr = new StreamReader("lastorder.txt");
+                var location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+                var lastorder_path = Path.Combine(Path.GetDirectoryName(location)!, "lastorder.txt");
+                StreamReader sr = new StreamReader(lastorder_path);
                 var line = sr.ReadLine();
                 lastOrder = int.Parse(line ?? "0");
                 sr.Close();
