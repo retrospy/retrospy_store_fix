@@ -82,24 +82,16 @@ namespace StoreFix
                         {
                             if (variation.manage_stock == true)
                             {
-                                if (variation.attributes.Count == 1 && variation.attributes[0].option == "No" && stock != -100)
+                                int variationStock = -100;
+                                foreach (var attr in variation.attributes)
                                 {
-                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), stock);
-                                    Thread.Sleep(1000);
+                                    int tempVariationStock = GetStock(attr.option.ToString(), attr.name.ToString(), variationStock) / GetQuantityUsed(attr.option.ToString());
+                                    if (tempVariationStock < variationStock || variationStock == -100)
+                                        variationStock = tempVariationStock;
                                 }
-                                else
-                                {
-                                    int variationStock = -100;
-                                    foreach (var attr in variation.attributes)
-                                    {
-                                        int tempVariationStock = GetStock(attr.option.ToString(), attr.name.ToString()) / GetQuantityUsed(attr.option.ToString());
-                                        if (tempVariationStock < variationStock || variationStock == -100)
-                                            variationStock = tempVariationStock;
-                                    }
-                                    if (variationStock != -100)
-                                        UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(hasBaseStock ? stock : 999999, variationStock));
-                                    Thread.Sleep(1000);
-                                }
+                                if (variationStock != -100)
+                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(hasBaseStock ? stock : 999999, variationStock));
+                                Thread.Sleep(1000);
                             }
                         }
                     }
@@ -154,6 +146,29 @@ namespace StoreFix
             wcHttpClient.PutAsync("/wp-json/wc/v3/products/" + productId + "/variations/" + variationId, s);
         }
 
+        private int GetStock(string option, string name, int currentStock)
+        {
+            if (attributeStockItems == null)
+                return -100;
+
+            foreach (var obj in attributeStockItems)
+            {
+                if (obj.title == name)
+                {
+                    if (option != "No")
+                        return obj.quantity;
+                    else
+                        return currentStock;
+                }
+                else if (obj.title == name + " (" + option + ")")
+                {
+                    return obj.quantity;
+                }
+            }
+
+            return -100;
+        }
+
         private int GetStock(string option, string name)
         {
             if (attributeStockItems == null)
@@ -165,7 +180,6 @@ namespace StoreFix
                 {
                     return obj.quantity;
                 }
-       
             }
 
             return -100;
