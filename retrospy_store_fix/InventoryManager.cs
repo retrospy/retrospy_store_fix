@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,11 +34,19 @@ namespace StoreFix
 
         public void SyncInventory()
         {
+            GetAttributeStockItems();
+
+            if (!LoadAndCheckAttributeStockState(attributeStockItems))
+            {
+                return;
+            }
+
+
             int productPage = 1;
             while (productPage < 3)
             {
                 GetProducts(productPage);
-                GetAttributeStockItems();
+                //GetAttributeStockItems();
 
                 if (products == null)
                     return;
@@ -103,6 +112,66 @@ namespace StoreFix
                 }
                 productPage++;
             }
+        }
+
+        private bool LoadAndCheckAttributeStockState(dynamic? attributeStockItems)
+        {
+            bool needToUpdateStock = false;
+
+            var location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var stockstate_path = Path.Combine(Path.GetDirectoryName(location)!, "stockstate.json");
+
+            try
+            {
+                if (File.Exists(stockstate_path))
+                {
+                    var stockstate = File.ReadAllText(stockstate_path);
+                    dynamic? currentStockState = JsonConvert.DeserializeObject(stockstate);
+
+                    int count = 0;
+                    Dictionary<string, int> stockState = new Dictionary<string, int>();
+
+                    if (currentStockState != null && attributeStockItems != null)
+                    {
+                        foreach (var stockattribute in currentStockState)
+                        {
+                            stockState.Add(stockattribute.title.ToString(), int.Parse(stockattribute.quantity.ToString()));
+                            count++;
+                        }
+
+                        foreach (var serverStockAttribute in attributeStockItems)
+                        {
+                            int quantity = 0;
+                            if (!stockState.TryGetValue(serverStockAttribute.title.ToString(), out quantity) || quantity != int.Parse(serverStockAttribute.quantity.ToString()))
+                            {
+                                needToUpdateStock = true;
+                                break;
+                            }
+                            count--;
+                        }
+
+                        if (count != 0)
+                            needToUpdateStock = true;
+                    }
+                    else
+                    {
+                        needToUpdateStock = true;
+                    }
+                }
+                else
+                {
+                    needToUpdateStock = true;
+                }
+
+                string json = JsonConvert.SerializeObject(attributeStockItems);
+                File.WriteAllText(stockstate_path, json);
+
+            }
+            catch (Exception)
+            {
+            }
+
+            return needToUpdateStock;
         }
 
         private int GetQuantityUsed(string quantityStr)
