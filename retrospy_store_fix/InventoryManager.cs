@@ -271,7 +271,10 @@ namespace StoreFix
                 else
                 {
                     dynamic? moreProducts = JsonConvert.DeserializeObject(responseStr);
-                    products?.Add(moreProducts);
+                    if (moreProducts != null)
+                        foreach (var product in moreProducts)
+                            products?.Add(product);
+
                     if (moreProducts?.Count < 100)
                         morePages = false;
                 }
@@ -304,7 +307,10 @@ namespace StoreFix
                 else
                 {
                     dynamic? moreAttributeStockItems = JsonConvert.DeserializeObject(responseStr);
-                    attributeStockItems?.Add(moreAttributeStockItems);
+                    if (moreAttributeStockItems != null)
+                        foreach (var item in moreAttributeStockItems)
+                            attributeStockItems?.Add(item);
+
                     if (moreAttributeStockItems?.Count < 100)
                         morePages = false;
                 }
@@ -335,7 +341,10 @@ namespace StoreFix
                 else
                 {
                     dynamic? moreProductVariationsItems = JsonConvert.DeserializeObject(responseStr);
-                    productVariationsItems?.Add(moreProductVariationsItems);
+                    if (moreProductVariationsItems != null)
+                        foreach(var variation in moreProductVariationsItems)
+                            productVariationsItems?.Add(variation);
+
                     if (moreProductVariationsItems?.Count < 100)
                         morePages = false;
                 }
