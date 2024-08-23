@@ -86,7 +86,7 @@ namespace StoreFix
                     {
                         if (variation.manage_stock == true)
                         {
-                            int variationStock = -100;
+                            int variationStock = hasBaseStock ? stock : -100;
                             foreach (var attr in variation.attributes)
                             {
                                 int tempVariationStock = GetStock(attr.option.ToString(), attr.name.ToString(), variationStock) / GetQuantityUsed(attr.option.ToString());
@@ -290,7 +290,7 @@ namespace StoreFix
 
             while (morePages)
             {
-                HttpResponseMessage response = wcHttpClient.GetAsync("/wp-json/wc/v3/attribute-stock?per_page=100").Result;
+                HttpResponseMessage response = wcHttpClient.GetAsync(string.Format("/wp-json/wc/v3/attribute-stock?per_page=100&page={0}", page)).Result;
                 string responseStr = string.Empty;
 
                 using (StreamReader stream = new StreamReader(response.Content.ReadAsStreamAsync().Result))
