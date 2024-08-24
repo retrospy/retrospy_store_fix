@@ -94,17 +94,28 @@ namespace StoreFix
                                     variationStock = tempVariationStock;
                             }
                             if (variationStock != -100)
-                                UpdateVariationStock(product.id.ToString(), variation.id.ToString(), Math.Min(hasBaseStock ? stock : 999999, variationStock));
-                            Thread.Sleep(1000);
+                            {
+                                int newStock = Math.Min(hasBaseStock ? stock : 999999, variationStock);
+                                if (newStock != variation.stock_quantity.ToObject<int>())
+                                {
+                                    UpdateVariationStock(product.id.ToString(), variation.id.ToString(), newStock);
+                                    Thread.Sleep(1000);
+                                }
+                            }
                         }
                     }
                 }
-                else if (stock != -100)
+                else if (stock != -100 && stock != product.stock_quantity.ToObject<int>())
                 {
                     UpdateStock(product.id.ToString(), stock);
                     Thread.Sleep(1000);
                 }
             }
+
+            var location = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            var stockstate_path = Path.Combine(Path.GetDirectoryName(location)!, "stockstate.json");
+            string json = JsonConvert.SerializeObject(attributeStockItems);
+            File.WriteAllText(stockstate_path, json);
         }
 
         private bool LoadAndCheckAttributeStockState(dynamic? attributeStockItems)
@@ -155,9 +166,6 @@ namespace StoreFix
                 {
                     needToUpdateStock = true;
                 }
-
-                string json = JsonConvert.SerializeObject(attributeStockItems);
-                File.WriteAllText(stockstate_path, json);
 
             }
             catch (Exception)
