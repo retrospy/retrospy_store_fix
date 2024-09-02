@@ -57,27 +57,30 @@ namespace StoreFix
                 {
                     if (attr.variation == true && product.type == "variable")
                     {
-                        GetProductVariations(int.Parse((string)product.id));
-                        if (productVariationsItems != null)
+                        if (!hasVariations)
                         {
-                            foreach (var variation in productVariationsItems)
+                            GetProductVariations(int.Parse((string)product.id));
+                            if (productVariationsItems != null)
                             {
-                                if (variation.manage_stock == true)
+                                foreach (var variation in productVariationsItems)
                                 {
-                                    hasVariations = true;
+                                    if (variation.manage_stock == true)
+                                    {
+                                        hasVariations = true;
+                                    }
                                 }
                             }
-
-                            if (hasVariations)
-                                continue;
                         }
                     }
-                    tempStock = GetStock(attr.options[0].ToString(), attr.name.ToString());
-                    if (attr.options is not null && attr.options.Count > 0)
-                        tempStock /= GetQuantityUsed(attr.options[0].ToString());
-                    if (tempStock < stock || stock == -100)
-                        stock = tempStock;
-                    hasBaseStock = true;
+                    else
+                    {
+                        tempStock = GetStock(attr.options[0].ToString(), attr.name.ToString());
+                        if (attr.options is not null && attr.options.Count > 0)
+                            tempStock /= GetQuantityUsed(attr.options[0].ToString());
+                        if (tempStock < stock || stock == -100)
+                            stock = tempStock;
+                        hasBaseStock = true;
+                    }
                 }
 
                 if (hasVariations && productVariationsItems != null)
@@ -86,6 +89,7 @@ namespace StoreFix
                     {
                         if (variation.manage_stock == true)
                         {
+                            int varid = variation.id;
                             int variationStock = hasBaseStock ? stock : -100;
                             foreach (var attr in variation.attributes)
                             {
@@ -98,7 +102,7 @@ namespace StoreFix
                                 int newStock = Math.Min(hasBaseStock ? stock : 999999, variationStock);
                                 int currentStock = 0;
                                 if (variation.stock_quantity != null)
-                                    variation.stock_quantity.ToObject<int>();
+                                    currentStock = variation.stock_quantity.ToObject<int>();
 
                                 if (newStock != currentStock)
                                 {
