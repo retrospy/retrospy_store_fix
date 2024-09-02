@@ -96,7 +96,11 @@ namespace StoreFix
                             if (variationStock != -100)
                             {
                                 int newStock = Math.Min(hasBaseStock ? stock : 999999, variationStock);
-                                if (newStock != variation.stock_quantity.ToObject<int>())
+                                int currentStock = 0;
+                                if (variation.stock_quantity != null)
+                                    variation.stock_quantity.ToObject<int>();
+
+                                if (newStock != currentStock)
                                 {
                                     UpdateVariationStock(product.id.ToString(), variation.id.ToString(), newStock);
                                     Thread.Sleep(1000);
