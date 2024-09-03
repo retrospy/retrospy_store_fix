@@ -147,8 +147,11 @@ namespace StoreFix
                     {
                         foreach (var stockattribute in currentStockState)
                         {
-                            stockState.Add(stockattribute.title.ToString(), int.Parse(stockattribute.quantity.ToString()));
-                            count++;
+                            if (!stockState.ContainsKey(stockattribute.title.ToString()))
+                            {
+                                stockState.Add(stockattribute.title.ToString(), int.Parse(stockattribute.quantity.ToString()));
+                                count++;
+                            }
                         }
 
                         foreach (var serverStockAttribute in attributeStockItems)
@@ -176,7 +179,7 @@ namespace StoreFix
                 }
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
             }
 
