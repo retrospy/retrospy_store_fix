@@ -169,7 +169,7 @@ namespace StoreFix
                     case "Power supply board for SYM-1 SBC":
                         {
                             var wooItem = new WooProduct();
-                            wooItem.ProductId = item.options == " (Assembly: Fully Assembled)" ? 1844 : 1150;  ;
+                            wooItem.ProductId = item.options == " (Assembly: Fully Assembled)" ? 1000 : 1150;  ;
                             wooItem.Quantity = item.quantity;
                             wooItem.Price = item.options == " (Assembly: Fully Assembled)" ? 23.10f : 5.50f;
                             wooItem.VariationId = 0;
